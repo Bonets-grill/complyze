@@ -17,6 +17,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   X,
+  ShieldCheck,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -32,6 +33,7 @@ export function Sidebar() {
     { href: '/compliance', icon: Shield, label: T[lang].compliance },
     { href: '/knowledge-base', icon: BookOpen, label: T[lang].knowledgeBase },
     { href: '/settings', icon: Settings, label: T[lang].settings },
+    { href: '/admin', icon: ShieldCheck, label: 'Admin' },
   ]
 
   return (

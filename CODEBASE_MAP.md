@@ -6,17 +6,23 @@
 
 - **Project**: Complyze — EU AI Act Compliance Platform
 - **Stack**: Next.js 16 + React 19 + Supabase + Tailwind 4 + shadcn/ui + Zustand
-- **Total source files**: 53
-- **Pages**: 20
+- **Total source files**: 60
+- **Pages**: 26
 - **API Routes**: 1
 - **Components**: 17
-- **Stores**: 2
+- **Stores**: 3
 
 ## Pages
 
 | Route | File |
 |-------|------|
 | `/` | `src/app/.../(marketing)/page.tsx` |
+| `/admin` | `src/app/.../admin/page.tsx` |
+| `/admin/dpa-tracker` | `src/app/.../admin/dpa-tracker/page.tsx` |
+| `/admin/insurance` | `src/app/.../admin/insurance/page.tsx` |
+| `/admin/lawyer` | `src/app/.../admin/lawyer/page.tsx` |
+| `/admin/legal-entity` | `src/app/.../admin/legal-entity/page.tsx` |
+| `/admin/tax` | `src/app/.../admin/tax/page.tsx` |
 | `/assessments` | `src/app/.../assessments/page.tsx` |
 | `/compliance` | `src/app/.../compliance/page.tsx` |
 | `/cookies` | `src/app/.../cookies/page.tsx` |
@@ -70,6 +76,7 @@
 | File |
 |------|
 | `src/stores/auth-store.ts` |
+| `src/stores/legal-config-store.ts` |
 | `src/stores/ui-store.ts` |
 
 ## Libraries

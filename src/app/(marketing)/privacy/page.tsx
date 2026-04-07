@@ -3,12 +3,16 @@
 import Link from 'next/link'
 import { useUIStore } from '@/stores/ui-store'
 import { LEGAL } from '@/lib/i18n/legal-translations'
+import { useLegalConfigStore } from '@/stores/legal-config-store'
 import { ThemeToggle } from '@/components/layout/theme-toggle'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
 
 export default function PrivacyPolicyPage() {
   const { lang } = useUIStore()
   const L = LEGAL[lang]
+  const { entity } = useLegalConfigStore()
+  const contactEmail = entity.privacyEmail || 'privacy@complyze.eu'
+  const companyName = entity.companyName || 'Complyze'
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -37,7 +41,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Data Controller */}
         <h2 className="mt-10 text-2xl font-semibold">{L.privacyDataController}</h2>
-        <p className="mt-3 leading-relaxed">{L.privacyDataControllerDesc}</p>
+        <p className="mt-3 leading-relaxed">{L.privacyDataControllerDesc.replace('Complyze', companyName)}</p>
 
         {/* Data We Collect */}
         <h2 className="mt-10 text-2xl font-semibold">{L.privacyDataWeCollect}</h2>
@@ -118,7 +122,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Contact */}
         <h2 className="mt-10 text-2xl font-semibold">{L.privacyContact}</h2>
-        <p className="mt-3 leading-relaxed">{L.privacyContactDesc}</p>
+        <p className="mt-3 leading-relaxed">{L.privacyContactDesc.replace('privacy@complyze.eu', contactEmail)}</p>
       </main>
 
       {/* Footer with legal links */}
