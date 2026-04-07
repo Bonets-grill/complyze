@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUIStore } from '@/stores/ui-store'
 import { T } from '@/lib/i18n'
+import { LEGAL } from '@/lib/i18n/legal-translations'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,9 +22,15 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [consentPrivacy, setConsentPrivacy] = useState(false)
+  const [consentTerms, setConsentTerms] = useState(false)
+  const [consentAi, setConsentAi] = useState(false)
+
+  const canSubmit = consentPrivacy && consentTerms && consentAi
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!canSubmit) return
     setError('')
     setLoading(true)
 
@@ -32,7 +39,14 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        data: { full_name: fullName, company_name: companyName },
+        data: {
+          full_name: fullName,
+          company_name: companyName,
+          consent_privacy: true,
+          consent_terms: true,
+          consent_ai_processing: true,
+          consent_timestamp: new Date().toISOString(),
+        },
         emailRedirectTo: `${window.location.origin}/api/auth/callback`,
       },
     })
@@ -105,9 +119,58 @@ export default function RegisterPage() {
               autoComplete="new-password"
             />
           </div>
+
+          {/* Legal consents */}
+          <div className="space-y-3 rounded-lg border p-4">
+            <p className="text-sm font-medium">{LEGAL[lang].consentRequired}</p>
+            <label className="flex items-start gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consentPrivacy}
+                onChange={(e) => setConsentPrivacy(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                required
+              />
+              <span>
+                {LEGAL[lang].iHaveRead}{' '}
+                <Link href="/privacy" target="_blank" className="text-blue-600 hover:underline">
+                  {T[lang].privacy}
+                </Link>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consentTerms}
+                onChange={(e) => setConsentTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                required
+              />
+              <span>
+                {LEGAL[lang].iHaveRead}{' '}
+                <Link href="/terms" target="_blank" className="text-blue-600 hover:underline">
+                  {T[lang].terms}
+                </Link>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consentAi}
+                onChange={(e) => setConsentAi(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                required
+              />
+              <span>{LEGAL[lang].consentAiProcessing}</span>
+            </label>
+          </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700"
+            disabled={loading || !canSubmit}
+          >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {T[lang].register}
           </Button>

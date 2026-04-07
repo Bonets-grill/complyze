@@ -6,10 +6,10 @@
 
 - **Project**: Complyze — EU AI Act Compliance Platform
 - **Stack**: Next.js 16 + React 19 + Supabase + Tailwind 4 + shadcn/ui + Zustand
-- **Total source files**: 43
-- **Pages**: 14
+- **Total source files**: 53
+- **Pages**: 20
 - **API Routes**: 1
-- **Components**: 14
+- **Components**: 17
 - **Stores**: 2
 
 ## Pages
@@ -19,17 +19,23 @@
 | `/` | `src/app/.../(marketing)/page.tsx` |
 | `/assessments` | `src/app/.../assessments/page.tsx` |
 | `/compliance` | `src/app/.../compliance/page.tsx` |
+| `/cookies` | `src/app/.../cookies/page.tsx` |
 | `/dashboard` | `src/app/.../dashboard/page.tsx` |
 | `/documents` | `src/app/.../documents/page.tsx` |
+| `/dpa` | `src/app/.../dpa/page.tsx` |
 | `/forgot-password` | `src/app/.../forgot-password/page.tsx` |
 | `/knowledge-base` | `src/app/.../knowledge-base/page.tsx` |
+| `/legal-notice` | `src/app/.../legal-notice/page.tsx` |
 | `/login` | `src/app/.../login/page.tsx` |
+| `/privacy` | `src/app/.../privacy/page.tsx` |
 | `/register` | `src/app/.../register/page.tsx` |
 | `/settings` | `src/app/.../settings/page.tsx` |
+| `/settings/data-rights` | `src/app/.../settings/data-rights/page.tsx` |
 | `/settings/profile` | `src/app/.../settings/profile/page.tsx` |
 | `/settings/team` | `src/app/.../settings/team/page.tsx` |
 | `/settings/tenant` | `src/app/.../settings/tenant/page.tsx` |
 | `/systems` | `src/app/.../systems/page.tsx` |
+| `/terms` | `src/app/.../terms/page.tsx` |
 
 ## API Routes
 
@@ -41,12 +47,15 @@
 
 | File |
 |------|
+| `src/components/layout/ai-disclaimer.tsx` |
 | `src/components/layout/auth-provider.tsx` |
 | `src/components/layout/breadcrumbs.tsx` |
+| `src/components/layout/cookie-banner.tsx` |
 | `src/components/layout/header.tsx` |
 | `src/components/layout/language-switcher.tsx` |
 | `src/components/layout/sidebar.tsx` |
 | `src/components/layout/theme-toggle.tsx` |
+| `src/components/layout/transparency-footer.tsx` |
 | `src/components/ui/avatar.tsx` |
 | `src/components/ui/badge.tsx` |
 | `src/components/ui/button.tsx` |
@@ -68,6 +77,7 @@
 | File |
 |------|
 | `src/lib/i18n/index.ts` |
+| `src/lib/i18n/legal-translations.ts` |
 | `src/lib/i18n/translations.ts` |
 | `src/lib/supabase/client.ts` |
 | `src/lib/supabase/middleware.ts` |

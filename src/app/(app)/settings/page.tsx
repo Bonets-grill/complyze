@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useUIStore } from '@/stores/ui-store'
 import { T } from '@/lib/i18n'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { User, Building2, Users } from 'lucide-react'
+import { LEGAL } from '@/lib/i18n/legal-translations'
+import { User, Building2, Users, Shield } from 'lucide-react'
 
 export default function SettingsPage() {
   const { lang } = useUIStore()
@@ -13,6 +14,7 @@ export default function SettingsPage() {
     { href: '/settings/profile', icon: User, title: T[lang].profileSettings, desc: T[lang].profile },
     { href: '/settings/tenant', icon: Building2, title: T[lang].tenantSettings, desc: T[lang].tenant },
     { href: '/settings/team', icon: Users, title: T[lang].teamMembers, desc: T[lang].team },
+    { href: '/settings/data-rights', icon: Shield, title: LEGAL[lang].gdprDataRights, desc: 'GDPR' },
   ]
 
   return (

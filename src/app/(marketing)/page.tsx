@@ -220,8 +220,11 @@ export default function LandingPage() {
             <div>
               <h3 className="mb-3 text-sm font-semibold">{T[lang].legal}</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">{T[lang].privacy}</a></li>
-                <li><a href="#" className="hover:text-foreground">{T[lang].terms}</a></li>
+                <li><Link href="/privacy" className="hover:text-foreground">{T[lang].privacy}</Link></li>
+                <li><Link href="/terms" className="hover:text-foreground">{T[lang].terms}</Link></li>
+                <li><Link href="/cookies" className="hover:text-foreground">Cookies</Link></li>
+                <li><Link href="/legal-notice" className="hover:text-foreground">Imprint</Link></li>
+                <li><Link href="/dpa" className="hover:text-foreground">DPA</Link></li>
               </ul>
             </div>
           </div>
