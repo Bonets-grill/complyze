@@ -12,7 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { ArrowLeft, Loader2, Sparkles, AlertTriangle, CheckCircle, Circle, Shield } from 'lucide-react'
 import { getActionsForCategory, getComplianceScore, type ComplianceAction } from '@/lib/compliance-actions'
-import type { RiskCategory, SystemStatus } from '@/types/database'
+import { getRequiredDocs } from '@/lib/doc-templates'
+import { useDocumentsStore } from '@/stores/documents-store'
+import type { RiskCategory, SystemStatus, DocType } from '@/types/database'
 
 const RISK_COLORS: Record<RiskCategory, string> = {
   prohibited: 'bg-red-600 text-white',
@@ -61,6 +63,9 @@ export default function SystemDetailPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const [reclassifying, setReclassifying] = useState(false)
   const [newStatus, setNewStatus] = useState<SystemStatus | ''>('')
+  const [autoComplying, setAutoComplying] = useState(false)
+  const [autoProgress, setAutoProgress] = useState('')
+  const { addDocument, documents } = useDocumentsStore()
 
   if (!system) {
     return (
@@ -116,6 +121,76 @@ export default function SystemDetailPage() {
     setNewStatus('')
   }
 
+  const handleAutoComply = async () => {
+    if (!system.category) return
+    setAutoComplying(true)
+
+    try {
+      // Step 1: Complete all actions
+      setAutoProgress(lang === 'es' ? 'Completando acciones de cumplimiento...' : 'Completing compliance actions...')
+      const allActions = getActionsForCategory(system.category)
+      const allActionIds = allActions.map(a => a.id)
+      const currentCompleted = system.completedActions || []
+      const missing = allActionIds.filter(id => !currentCompleted.includes(id))
+      if (missing.length > 0) {
+        updateSystem(id, { completedActions: allActionIds })
+      }
+      await new Promise(r => setTimeout(r, 500))
+
+      // Step 2: Generate all required documents
+      const requiredDocs = getRequiredDocs(system.category)
+      const existingDocs = documents.filter(d => d.ai_system_id === id)
+
+      for (const docInfo of requiredDocs) {
+        const exists = existingDocs.some(d => d.doc_type === docInfo.type)
+        if (exists) continue
+
+        setAutoProgress(lang === 'es'
+          ? `Generando: ${docInfo.title_es}...`
+          : `Generating: ${docInfo.title_en}...`)
+
+        try {
+          const res = await fetch('/api/ai/generate-document', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ system, docType: docInfo.type }),
+          })
+
+          if (res.ok) {
+            const data = await res.json()
+            addDocument({
+              ai_system_id: id,
+              doc_type: docInfo.type as DocType,
+              title: docInfo.title_en,
+              content: data.content,
+              version: 1,
+              status: 'approved',
+              generated_by: 'ai',
+              approved_at: new Date().toISOString(),
+            })
+          }
+        } catch {
+          // Continue with next doc
+        }
+        await new Promise(r => setTimeout(r, 300))
+      }
+
+      // Step 3: Set status to compliant
+      setAutoProgress(lang === 'es' ? 'Marcando como conforme...' : 'Setting status to compliant...')
+      updateSystem(id, { status: 'compliant' })
+      await new Promise(r => setTimeout(r, 500))
+
+      setAutoProgress(lang === 'es' ? 'Cumplimiento completo!' : 'Compliance complete!')
+    } catch {
+      setAutoProgress(lang === 'es' ? 'Error — intente de nuevo' : 'Error — try again')
+    } finally {
+      setTimeout(() => {
+        setAutoComplying(false)
+        setAutoProgress('')
+      }, 1500)
+    }
+  }
+
   const actions = getActionsForCategory(system.category)
   const completedActions = system.completedActions || []
   const complianceScore = getComplianceScore(system.category, completedActions)
@@ -152,6 +227,56 @@ export default function SystemDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* One-Click Compliance */}
+      {system.category && system.status !== 'compliant' && (
+        <Card className="border-blue-600/30 bg-blue-600/5">
+          <CardContent className="flex items-center justify-between py-4">
+            <div>
+              <p className="font-semibold text-sm">
+                {lang === 'es' ? 'Cumplimiento automático' : 'Automatic Compliance'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {autoProgress || (lang === 'es'
+                  ? 'Completa todas las acciones, genera todos los documentos y marca como conforme — con un solo clic.'
+                  : 'Complete all actions, generate all documents, and mark as compliant — with one click.')}
+              </p>
+            </div>
+            <Button
+              className="bg-blue-600 hover:bg-blue-700 shrink-0"
+              onClick={handleAutoComply}
+              disabled={autoComplying}
+            >
+              {autoComplying ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+              )}
+              {autoComplying
+                ? (lang === 'es' ? 'Procesando...' : 'Processing...')
+                : (lang === 'es' ? 'Completar cumplimiento' : 'Complete Compliance')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {system.status === 'compliant' && complianceScore === 100 && (
+        <Card className="border-emerald-500/30 bg-emerald-500/5">
+          <CardContent className="flex items-center gap-3 py-4">
+            <CheckCircle className="h-6 w-6 text-emerald-500 shrink-0" />
+            <div>
+              <p className="font-semibold text-sm text-emerald-600 dark:text-emerald-400">
+                {lang === 'es' ? 'Sistema conforme con el EU AI Act' : 'System compliant with EU AI Act'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {lang === 'es'
+                  ? 'Todas las acciones completadas, todos los documentos generados y aprobados.'
+                  : 'All actions completed, all documents generated and approved.'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 border-b">
