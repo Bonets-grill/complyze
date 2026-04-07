@@ -26,7 +26,7 @@ import {
   Download,
   FileDown,
 } from 'lucide-react'
-import { exportDocumentToPDF, exportAllDocumentsToPDF } from '@/lib/export-pdf'
+import { exportDocumentToPDF } from '@/lib/export-pdf'
 import { toast } from 'sonner'
 import type { DocType, DocStatus, RiskCategory } from '@/types/database'
 
@@ -231,18 +231,17 @@ export default function SystemDocumentsPage() {
         </p>
         {existingDocs.length > 0 && (
           <div className="mt-3 flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const docs = existingDocs.map(d => ({ title: d.title, content: d.content }))
-                exportAllDocumentsToPDF(docs, system.name)
-                toast.success(lang === 'es' ? `Descargando ${docs.length} PDFs...` : `Downloading ${docs.length} PDFs...`)
-              }}
-            >
-              <FileDown className="mr-1.5 h-4 w-4" />
-              {lang === 'es' ? `Descargar todos (${existingDocs.length} PDFs)` : `Download all (${existingDocs.length} PDFs)`}
-            </Button>
+            {existingDocs.map((d) => (
+              <Button
+                key={d.id}
+                variant="outline"
+                size="sm"
+                onClick={() => exportDocumentToPDF(d.id)}
+              >
+                <FileDown className="mr-1.5 h-4 w-4" />
+                {d.title.split(' ').slice(0, 3).join(' ')}... PDF
+              </Button>
+            ))}
           </div>
         )}
       </div>
@@ -312,10 +311,7 @@ export default function SystemDocumentsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              exportDocumentToPDF(existingDoc.title, existingDoc.content, system.name)
-                              toast.success('PDF downloading...')
-                            }}
+                            onClick={() => exportDocumentToPDF(existingDoc.id)}
                           >
                             <Download className="mr-1 h-4 w-4" />
                             PDF
