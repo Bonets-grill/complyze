@@ -18,6 +18,7 @@ export interface AISystemLocal {
   status: SystemStatus
   classification_reasoning: string
   classified_at: string | null
+  completedActions: string[]
   created_at: string
   updated_at: string
 }
@@ -28,6 +29,7 @@ interface SystemsState {
   updateSystem: (id: string, data: Partial<AISystemLocal>) => void
   deleteSystem: (id: string) => void
   getSystem: (id: string) => AISystemLocal | undefined
+  toggleAction: (systemId: string, actionId: string) => void
 }
 
 export const useSystemsStore = create<SystemsState>()(
@@ -57,6 +59,19 @@ export const useSystemsStore = create<SystemsState>()(
       deleteSystem: (id) =>
         set((s) => ({ systems: s.systems.filter((sys) => sys.id !== id) })),
       getSystem: (id) => get().systems.find((sys) => sys.id === id),
+      toggleAction: (systemId, actionId) =>
+        set((s) => ({
+          systems: s.systems.map((sys) => {
+            if (sys.id !== systemId) return sys
+            const completed = sys.completedActions || []
+            const has = completed.includes(actionId)
+            return {
+              ...sys,
+              completedActions: has ? completed.filter((a) => a !== actionId) : [...completed, actionId],
+              updated_at: new Date().toISOString(),
+            }
+          }),
+        })),
     }),
     { name: 'complyze_systems' }
   )

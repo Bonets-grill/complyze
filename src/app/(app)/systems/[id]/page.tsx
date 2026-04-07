@@ -6,10 +6,12 @@ import Link from 'next/link'
 import { useUIStore } from '@/stores/ui-store'
 import { useSystemsStore } from '@/stores/systems-store'
 import { T } from '@/lib/i18n'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, Loader2, Sparkles, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Loader2, Sparkles, AlertTriangle, CheckCircle, Circle, Shield } from 'lucide-react'
+import { getActionsForCategory, getComplianceScore, type ComplianceAction } from '@/lib/compliance-actions'
 import type { RiskCategory, SystemStatus } from '@/types/database'
 
 const RISK_COLORS: Record<RiskCategory, string> = {
@@ -45,11 +47,11 @@ function statusLabel(lang: keyof typeof T, status: SystemStatus) {
   return T[lang][map[status]]
 }
 
-type TabKey = 'overview' | 'classification' | 'status'
+type TabKey = 'overview' | 'classification' | 'actions' | 'status'
 
 export default function SystemDetailPage() {
   const { lang } = useUIStore()
-  const { systems, updateSystem } = useSystemsStore()
+  const { systems, updateSystem, toggleAction } = useSystemsStore()
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
@@ -114,9 +116,14 @@ export default function SystemDetailPage() {
     setNewStatus('')
   }
 
+  const actions = getActionsForCategory(system.category)
+  const completedActions = system.completedActions || []
+  const complianceScore = getComplianceScore(system.category, completedActions)
+
   const tabs: { key: TabKey; label: string }[] = [
     { key: 'overview', label: 'Overview' },
     { key: 'classification', label: 'Classification' },
+    { key: 'actions', label: `Action Plan (${completedActions.length}/${actions.length})` },
     { key: 'status', label: T[lang].status },
   ]
 
@@ -288,6 +295,107 @@ export default function SystemDetailPage() {
               </Button>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {activeTab === 'actions' && (
+        <div className="space-y-4">
+          {/* Compliance score */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-medium">
+                    {lang === 'es' ? 'Puntuación de cumplimiento' : 'Compliance Score'}
+                  </span>
+                </div>
+                <span className="text-sm font-bold">{complianceScore}%</span>
+              </div>
+              <div className="h-3 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    complianceScore === 100 ? 'bg-emerald-500' : complianceScore >= 50 ? 'bg-blue-600' : 'bg-yellow-500'
+                  }`}
+                  style={{ width: `${complianceScore}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {completedActions.length}/{actions.length} {lang === 'es' ? 'acciones completadas' : 'actions completed'}
+                {complianceScore === 100 && (
+                  <span className="ml-2 text-emerald-500 font-medium">
+                    {lang === 'es' ? '— Cumplimiento completo' : '— Fully compliant'}
+                  </span>
+                )}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Actions by priority */}
+          {(['critical', 'high', 'medium', 'low'] as const).map((priority) => {
+            const priorityActions = actions.filter(a => a.priority === priority)
+            if (priorityActions.length === 0) return null
+            const priorityLabels = {
+              critical: { en: 'Critical', es: 'Crítico', color: 'bg-red-500 text-white' },
+              high: { en: 'High', es: 'Alto', color: 'bg-orange-500 text-white' },
+              medium: { en: 'Medium', es: 'Medio', color: 'bg-yellow-500 text-black' },
+              low: { en: 'Low', es: 'Bajo', color: 'bg-gray-400 text-white' },
+            }
+            const pl = priorityLabels[priority]
+            return (
+              <Card key={priority}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <Badge className={pl.color}>{lang === 'es' ? pl.es : pl.en}</Badge>
+                    <CardTitle className="text-sm">
+                      {lang === 'es' ? 'Prioridad' : 'Priority'}
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {priorityActions.map((action) => {
+                      const isDone = completedActions.includes(action.id)
+                      return (
+                        <button
+                          key={action.id}
+                          className="flex items-start gap-3 w-full text-left p-3 rounded-lg border transition-colors hover:bg-accent"
+                          onClick={() => toggleAction(id, action.id)}
+                        >
+                          {isDone ? (
+                            <CheckCircle className="h-5 w-5 text-emerald-500 mt-0.5 shrink-0" />
+                          ) : (
+                            <Circle className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className={`text-sm font-medium ${isDone ? 'line-through text-muted-foreground' : ''}`}>
+                                {lang === 'es' ? action.title_es : action.title_en}
+                              </p>
+                              <Badge variant="secondary" className="text-xs shrink-0">{action.article}</Badge>
+                            </div>
+                            <p className={`text-xs mt-1 ${isDone ? 'text-muted-foreground/50' : 'text-muted-foreground'}`}>
+                              {lang === 'es' ? action.description_es : action.description_en}
+                            </p>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+
+          {actions.length === 0 && (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground">
+                  {lang === 'es' ? 'Clasifica el sistema primero para ver las acciones requeridas.' : 'Classify the system first to see required actions.'}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 

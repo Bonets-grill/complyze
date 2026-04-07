@@ -122,6 +122,7 @@ export default function NewSystemPage() {
       status: 'draft',
       classification_reasoning: reasoning,
       classified_at: cat ? new Date().toISOString() : null,
+      completedActions: [],
     })
 
     router.push('/systems')
