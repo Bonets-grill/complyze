@@ -6,11 +6,11 @@
 
 - **Project**: Complyze — EU AI Act Compliance Platform
 - **Stack**: Next.js 16 + React 19 + Supabase + Tailwind 4 + shadcn/ui + Zustand
-- **Total source files**: 66
-- **Pages**: 28
-- **API Routes**: 4
+- **Total source files**: 71
+- **Pages**: 29
+- **API Routes**: 5
 - **Components**: 17
-- **Stores**: 4
+- **Stores**: 5
 
 ## Pages
 
@@ -28,6 +28,7 @@
 | `/cookies` | `src/app/.../cookies/page.tsx` |
 | `/dashboard` | `src/app/.../dashboard/page.tsx` |
 | `/documents` | `src/app/.../documents/page.tsx` |
+| `/documents/[systemId]` | `src/app/.../documents/[systemId]/page.tsx` |
 | `/dpa` | `src/app/.../dpa/page.tsx` |
 | `/forgot-password` | `src/app/.../forgot-password/page.tsx` |
 | `/knowledge-base` | `src/app/.../knowledge-base/page.tsx` |
@@ -50,6 +51,7 @@
 | Endpoint | File |
 |----------|------|
 | `/api/ai/classify` | `src/app/api/ai/classify/route.ts` |
+| `/api/ai/generate-document` | `src/app/api/ai/generate-document/route.ts` |
 | `/api/auth/callback` | `src/app/api/auth/callback/route.ts` |
 | `/api/auth/demo` | `src/app/api/auth/demo/route.ts` |
 | `/api/auth/demo-logout` | `src/app/api/auth/demo-logout/route.ts` |
@@ -81,6 +83,7 @@
 | File |
 |------|
 | `src/stores/auth-store.ts` |
+| `src/stores/documents-store.ts` |
 | `src/stores/legal-config-store.ts` |
 | `src/stores/systems-store.ts` |
 | `src/stores/ui-store.ts` |
@@ -89,6 +92,8 @@
 
 | File |
 |------|
+| `src/lib/compliance-actions.ts` |
+| `src/lib/doc-templates.ts` |
 | `src/lib/i18n/index.ts` |
 | `src/lib/i18n/legal-translations.ts` |
 | `src/lib/i18n/translations.ts` |
