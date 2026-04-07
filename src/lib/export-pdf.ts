@@ -1,9 +1,38 @@
 'use client'
 
-import { marked } from 'marked'
+function mdToHtml(md: string): string {
+  return md
+    // Headers
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Horizontal rules
+    .replace(/^---$/gm, '<hr>')
+    // Tables
+    .replace(/^\|(.+)\|$/gm, (match) => {
+      const cells = match.split('|').filter(c => c.trim())
+      if (cells.every(c => /^[\s-:]+$/.test(c))) return '' // separator row
+      const tag = 'td'
+      const row = cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('')
+      return `<tr>${row}</tr>`
+    })
+    // Wrap consecutive tr in table
+    .replace(/((<tr>.*<\/tr>\n?)+)/g, '<table><tbody>$1</tbody></table>')
+    // Unordered lists
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/((<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>')
+    // Paragraphs (lines that aren't already HTML)
+    .replace(/^(?!<[hultdao]|<\/|<br|<hr|<table|<strong)(.+)$/gm, '<p>$1</p>')
+    // Clean up empty lines
+    .replace(/\n{2,}/g, '\n')
+}
 
 function buildHTML(title: string, content: string, systemName: string): string {
-  const htmlContent = marked.parse(content) as string
+  const htmlContent = mdToHtml(content)
   const date = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
 
   return `<!DOCTYPE html>
