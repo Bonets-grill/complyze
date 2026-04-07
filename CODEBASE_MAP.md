@@ -6,11 +6,11 @@
 
 - **Project**: Complyze — EU AI Act Compliance Platform
 - **Stack**: Next.js 16 + React 19 + Supabase + Tailwind 4 + shadcn/ui + Zustand
-- **Total source files**: 60
-- **Pages**: 26
-- **API Routes**: 1
+- **Total source files**: 66
+- **Pages**: 28
+- **API Routes**: 4
 - **Components**: 17
-- **Stores**: 3
+- **Stores**: 4
 
 ## Pages
 
@@ -41,13 +41,18 @@
 | `/settings/team` | `src/app/.../settings/team/page.tsx` |
 | `/settings/tenant` | `src/app/.../settings/tenant/page.tsx` |
 | `/systems` | `src/app/.../systems/page.tsx` |
+| `/systems/[id]` | `src/app/.../systems/[id]/page.tsx` |
+| `/systems/new` | `src/app/.../systems/new/page.tsx` |
 | `/terms` | `src/app/.../terms/page.tsx` |
 
 ## API Routes
 
 | Endpoint | File |
 |----------|------|
+| `/api/ai/classify` | `src/app/api/ai/classify/route.ts` |
 | `/api/auth/callback` | `src/app/api/auth/callback/route.ts` |
+| `/api/auth/demo` | `src/app/api/auth/demo/route.ts` |
+| `/api/auth/demo-logout` | `src/app/api/auth/demo-logout/route.ts` |
 
 ## Components
 
@@ -77,6 +82,7 @@
 |------|
 | `src/stores/auth-store.ts` |
 | `src/stores/legal-config-store.ts` |
+| `src/stores/systems-store.ts` |
 | `src/stores/ui-store.ts` |
 
 ## Libraries
