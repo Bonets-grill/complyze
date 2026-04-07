@@ -31,8 +31,12 @@ export function Header() {
     .slice(0, 2) ?? '?'
 
   async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    // Clear demo session
+    await fetch('/api/auth/demo-logout', { method: 'POST' }).catch(() => {})
+    try {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+    } catch { /* Supabase not configured */ }
     useAuthStore.getState().reset()
     router.push('/login')
   }

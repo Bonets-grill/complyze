@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { useUIStore } from '@/stores/ui-store'
+import { useAuthStore } from '@/stores/auth-store'
 import { T } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,7 @@ import { Loader2 } from 'lucide-react'
 export default function LoginPage() {
   const router = useRouter()
   const { lang } = useUIStore()
+  const { setUser, setProfile, setTenant, setLoading: setAuthLoading } = useAuthStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -25,16 +26,45 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    // Try demo login first
+    const demoRes = await fetch('/api/auth/demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
 
-    if (authError) {
-      setError(authError.message)
-      setLoading(false)
+    if (demoRes.ok) {
+      const data = await demoRes.json()
+      setUser(data.user)
+      setProfile(data.profile)
+      setTenant(data.tenant)
+      setAuthLoading(false)
+      router.push('/dashboard')
       return
     }
 
-    router.push('/dashboard')
+    // Fall back to Supabase auth
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (authError) {
+        setError(authError.message)
+        setLoading(false)
+        return
+      }
+
+      router.push('/dashboard')
+    } catch {
+      setError('Authentication service unavailable')
+      setLoading(false)
+    }
+  }
+
+  function fillDemoCredentials() {
+    setEmail('admin@complyze.eu')
+    setPassword('Complyze2026!')
   }
 
   return (
@@ -85,6 +115,25 @@ export default function LoginPage() {
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {T[lang].login}
           </Button>
+
+          <div className="relative w-full">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Demo</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={fillDemoCredentials}
+          >
+            Demo: admin@complyze.eu
+          </Button>
+
           <p className="text-sm text-muted-foreground">
             {T[lang].noAccount}{' '}
             <Link href="/register" className="text-blue-600 hover:underline">
