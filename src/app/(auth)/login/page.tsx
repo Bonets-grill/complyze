@@ -26,25 +26,32 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    // Try demo login first
-    const demoRes = await fetch('/api/auth/demo', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-
-    if (demoRes.ok) {
-      const data = await demoRes.json()
-      setUser(data.user)
-      setProfile(data.profile)
-      setTenant(data.tenant)
-      setAuthLoading(false)
-      router.push('/dashboard')
-      return
-    }
-
-    // Fall back to Supabase auth
     try {
+      // Try demo login first
+      const demoRes = await fetch('/api/auth/demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+
+      if (demoRes.ok) {
+        const data = await demoRes.json()
+        setUser(data.user)
+        setProfile(data.profile)
+        setTenant(data.tenant)
+        setAuthLoading(false)
+        router.push('/dashboard')
+        return
+      }
+
+      // Demo returned 401 — try Supabase only if URL is real
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+      if (supabaseUrl.includes('placeholder') || !supabaseUrl.includes('supabase')) {
+        setError('Invalid email or password')
+        setLoading(false)
+        return
+      }
+
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
@@ -57,7 +64,7 @@ export default function LoginPage() {
 
       router.push('/dashboard')
     } catch {
-      setError('Authentication service unavailable')
+      setError('Invalid email or password')
       setLoading(false)
     }
   }
